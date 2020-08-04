@@ -31,7 +31,7 @@ class Model(object):
             adapted to the simulation's needs. Defaults to an empty dictionary.
     """
 
-    def __init__(self, epochs, verbose=True, properties=dict() N=20, recovery_days=5, max_recovery=15 ):
+    def __init__(self, epochs, verbose=True, properties=dict() ):
         self.epochs = epochs
         self.schedule = Schedule()
         self.environments = dict()
@@ -39,25 +39,12 @@ class Model(object):
         self.current_epoch = 0
         self.properties = properties
         self.exit = False
-        self.total_agents = N
-        self.recovery_days = recovery_days
-        self.max_recovery = max_recovery
         self.output = defaultdict(dict)
 
         # Changing sys.stdout messes with unittests, so we will not do it
         # running from a test
         if not self.verbose and "unittest" not in sys.modules:
             sys.stdout = os.devnull
-        for i in range(self.total_agents):     #adding the 20 agents to the schedule
-            a = SimpleAgent(i, self)
-            self.agents_to_schedule.add(a)
-
-            infected=random.choice([0,1], p=[0.9,0.1])
-            if infected==1:
-                a.state=State.infected
-                a.recovery_duration = self.the_recovery_time()
-    def the_recovery_time(self):
-        return int(self.random.normalvariate(self.recovery_days,self.max_recovery))
 
 
     def run(self):
