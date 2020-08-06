@@ -42,13 +42,14 @@ population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0,
 class SimpleAgent(Agent):
     
 
-    def __init__(self, name):
+    def __init__(self, name, inital_state=State.suceptible):
         super(SimpleAgent, self).__init__()
         self.name = name
         self.age = random.normalvariate(20,100)
-        self.state = State.infectious
+        self.state = inital_state
         self.infection_duration = 0
         self.recovery_duration = 5
+        population_stats['susceptible_pop'] += 1
 
 
     def step_prologue(self, model):
@@ -65,7 +66,7 @@ class SimpleAgent(Agent):
         a = model.schedule.agents
         # BP: a = model.schedule.agents
         if self.state is State.infectious:
-            for someone in a:
+            for someone in a: # random.choices(a, k=random.random([0,8])
                 if someone.state is State.susceptible:
                     if random.random() >= 0.5:
                         #print(random.random())
@@ -123,9 +124,9 @@ class SimpleAgent(Agent):
 class SimpleHelper(Helper):
 
     def step_prologue(self, model):
-        population_stats['susceptible_pop'] = len(model.schedule.agents)
-        population_stats['newly_infected'] = 0
         print(population_stats)
+        population_stats['newly_infected'] = 0
+
         print("Helper prologue")
         
         # zero out the newly_infected
@@ -155,10 +156,22 @@ model = Model(10)
 #model.properties["recovered"] = 0
 #model.properties["population"] = model.schedule.agents
 #model.schedule.agents_to_schedule.add(SimpleAgent("Adam"))
-model.schedule.agents_to_schedule.add(SimpleAgent("Beth"))
+
+seed_person = SimpleAgent("Beth")
+seed_person.state = State.infectious
+model.schedule.agents_to_schedule.add(SimpleAgent("Beth", initial_state=State.infectious))
 model.schedule.agents_to_schedule.add(SimpleAgent("james"))
 model.schedule.agents_to_schedule.add(SimpleAgent("sarah"))
 model.schedule.helpers.append(SimpleHelper())
 
 model.run()
 
+# Fixed # of epoch; run until no more infected
+# Multiples runs
+
+# Total infected: recovered
+# Peak infected: max simul infected [1:1, 2:5, 3:10, 4:5]
+# Average length of infection
+# R0 ie how many people I'm likely to infect
+
+#State for a *set* runs
