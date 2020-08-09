@@ -50,12 +50,10 @@ class SimpleAgent(Agent):
         self.recovery_duration = 5
         self.incubation_period = 0
         self.ptrans = 0.1
-        population_stats['susceptible_pop'] += 1
+        
 
-
-    def step_prologue(self, model):
-        print("This is the prologue, so I will say my name: {0}".format(
-            self.name))
+    #def step_prologue(self, model):
+        #print("This is the prologue, so I will say my name: {0}".format(self.name))
         
 # Transmission model
 # Propability of being infected is proportional to total number of infectous people.
@@ -67,13 +65,13 @@ class SimpleAgent(Agent):
         a = model.schedule.agents
         # BP: a = model.schedule.agents
         if self.state is State.infectious:
-            for someone in random.choices(list(a),k=random.randint(0,8)):
+            for someone in random.choices(list(a),k=random.randint(0,5)):
                 if someone.state is State.susceptible:
                     if random.random() <= self.ptrans:
-                        print(random.random())
+                        #print(random.random())
                         someone.state = State.infected
                         #someone.infection_duration = self.model.schedule.time
-            self.incubation_period += 1
+            
             self.infection_duration += 1
             # update length of infection
                         
@@ -83,29 +81,13 @@ class SimpleAgent(Agent):
     def step_epilogue(self, model):
 
         
-        
-        if self.state == State.infected:
-            population_stats['newly_infected'] += 1
-            population_stats['susceptible_pop'] -= 1
-            
-
-       
         if self.state == State.infected:
             self.state = State.infectious
-            population_stats['infectious_pop'] += 1
-            #population_stats['susceptible_pop'] -= 1
-                
-
-        if self.infection_duration == self.recovery_duration:
-            if self.state is State.infectious:
-                #population_stats['infectious_pop'] += 1
+           
+        if self.state is State.infectious:
+            if self.infection_duration == self.recovery_duration:
                 self.state = State.recovered
-                population_stats['recovered_pop'] += 1
-                population_stats['infectious_pop'] -= 1
-            #else:
-                #population_stats['recovered_pop'] = 0
-                #population_stats['infectious_pop'] = 0
-                
+               
             
         # Update state
         # infected => infectious (sick)
@@ -136,17 +118,21 @@ class SimpleAgent(Agent):
 class SimpleHelper(Helper):
 
     def step_prologue(self, model):
+        population_stats['susceptible_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.susceptible])
+        population_stats['infectious_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.infectious])
+        population_stats['recovered_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.recovered])
         print(population_stats)
-        population_stats['newly_infected'] = 0
+        
 
         print("Helper prologue")
         
-        # zero out the newly_infected
+        
         
     
         
 
     def step_epilogue(self,model):
+        population_stats['newly_infected'] = len([agent for agent in model.schedule.agents if agent.state == State.infected])
         print("Helper epilogue")
         
         
@@ -161,33 +147,53 @@ class simplemodel(model):
                 self.state = State.infected
        
    """
- 
 
-model = Model(10)
+
+model = Model(20)
 #model.properties["counter"] = 0
 #model.properties["infected"] = 0
 #model.properties["susceptible"] = 0
 #model.properties["recovered"] = 0
 #model.properties["population"] = model.schedule.agents
 
-model.schedule.agents_to_schedule.add(SimpleAgent("Adam"))
-model.schedule.agents_to_schedule.add(SimpleAgent("Beth", initial_state=State.infectious))
-model.schedule.agents_to_schedule.add(SimpleAgent("james"))
-model.schedule.agents_to_schedule.add(SimpleAgent("sarah"))
-model.schedule.agents_to_schedule.add(SimpleAgent("sam"))
-model.schedule.agents_to_schedule.add(SimpleAgent("Bella", initial_state=State.infectious))
-model.schedule.agents_to_schedule.add(SimpleAgent("eli"))
-model.schedule.agents_to_schedule.add(SimpleAgent("sasha"))
+def initial_state(person):
+    person.state = State.infectious
+
+
+
+for i in range(1,50):
+    model.schedule.agents_to_schedule.add(SimpleAgent(i))
+
+
+model.schedule.agents_to_schedule.add(SimpleAgent(i, initial_state=State.infectious ))
+model.schedule.agents_to_schedule.add(SimpleAgent(i, initial_state=State.infectious ))
+
+
+
+
+   
+    
+
+
+
+#model.schedule.agents_to_schedule.add(SimpleAgent("Beth", initial_state=State.infectious))
+#model.schedule.agents_to_schedule.add(SimpleAgent("james"))
+#model.schedule.agents_to_schedule.add(SimpleAgent("sarah"))
+#model.schedule.agents_to_schedule.add(SimpleAgent("sam"))
+#model.schedule.agents_to_schedule.add(SimpleAgent("Bella", initial_state=State.infectious))
+#model.schedule.agents_to_schedule.add(SimpleAgent("eli"))
+#model.schedule.agents_to_schedule.add(SimpleAgent("sasha"))
 model.schedule.helpers.append(SimpleHelper())
+
 
 model.run()
 
-# Fixed # of epoch; run until no more infected
+# Fixed # of epoch; run until no more infectious agents
 # Multiples runs
 
-# Total infected: recovered
-# Peak infected: max simul infected [1:1, 2:5, 3:10, 4:5]
-# Average length of infection
-# R0 ie how many people I'm likely to infect
+# Total infected: number of agents recovered
+# Peak infected: max number of newly infected agents each epoch [1:1, 2:5, 3:10, 4:5], max number of total cases = max.infectious_pop and max number of new cases = max.newly_infected
+# Average length of infection: so how many epochs did it take for infectious_population = 0
+# R0 ie how many people I'm likely to infect: for every infectious agents how many agents become newly infected
 
 #State for a *set* runs
