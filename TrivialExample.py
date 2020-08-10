@@ -163,7 +163,10 @@ def initial_state(person):
 
 for i in range(1,50):
     model.schedule.agents_to_schedule.add(SimpleAgent(i))
+# i == 49
 
+#for p in random.chose(2, model.schedule.agents)
+#   p.state = State.infectious
 
 model.schedule.agents_to_schedule.add(SimpleAgent(i, initial_state=State.infectious ))
 model.schedule.agents_to_schedule.add(SimpleAgent(i, initial_state=State.infectious ))
