@@ -36,7 +36,6 @@ class State(IntEnum):
 # population_stats = {'tsick_pop':0}
 # population_stats['tsick_pop'] += 1
 
-population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0} 
 
 class SimpleAgent(Agent):
     
@@ -121,6 +120,8 @@ class SimpleHelper(Helper):
         population_stats['susceptible_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.susceptible])
         population_stats['infectious_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.infectious])
         population_stats['recovered_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.recovered])
+        if  population_stats['infectious_pop'] == 0:
+            model.exit = True
         print(population_stats)
         
 
@@ -148,8 +149,11 @@ class simplemodel(model):
        
    """
 
+#def setup_model(num_agents, num_infected, max_num_epochs=100):
+#    model = Model(max_num_epochs)...
+#    return model
 
-model = Model(20)
+model = Model(100)
 #model.properties["counter"] = 0
 #model.properties["infected"] = 0
 #model.properties["susceptible"] = 0
@@ -188,9 +192,18 @@ model.schedule.agents_to_schedule.add(SimpleAgent(i, initial_state=State.infecti
 #model.schedule.agents_to_schedule.add(SimpleAgent("sasha"))
 model.schedule.helpers.append(SimpleHelper())
 
+population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0} 
 
 model.run()
 
+#all_stats = list()
+#for r in range(10):
+    # population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0} 
+#     model = setup_model(50, 2)
+#     model.run()
+#     all_stats.append(population_stats)
+# Average, min, max # infected over the outbreak
+# Average, min, man length of outbreak
 # Fixed # of epoch; run until no more infectious agents
 # Multiples runs
 
