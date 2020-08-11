@@ -28,7 +28,15 @@ class State(IntEnum):
     infectious = 2
     recovered = 3
 
+# BP: Consider using a dictionary instead?
+# [1,2,3][0] => 1
+# {1:'one', 2:'two', 3:'three'}[1] => 'one'
+# {2:'two', 1:'one', 3:'three'}
+# {'one':1, 'two':2, 'three':3}['one'] => 1
+# population_stats = {'tsick_pop':0}
+# population_stats['tsick_pop'] += 1
 
+population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0} 
 
 class SimpleAgent(Agent):
     
@@ -113,10 +121,7 @@ class SimpleHelper(Helper):
         population_stats['susceptible_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.susceptible])
         population_stats['infectious_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.infectious])
         population_stats['recovered_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.recovered])
-        if  population_stats['infectious_pop'] == 0:
-            model.exit = True
         print(population_stats)
-        
         
 
         print("Helper prologue")
@@ -143,54 +148,25 @@ class simplemodel(model):
        
    """
 
-def setup_model(num_agents, num_infectious, max_num_epochs=100):
-    model = Model(max_num_epochs)
-    for i in range(num_agents):
-        model.schedule.agents_to_schedule.add(SimpleAgent(i))
-    for p in range(1,num_infectious+1):
-        model.schedule.agents_to_schedule.add(SimpleAgent(p+i, initial_state=State.infectious ))
 
-    return model
-        
-    
-#for i in range(10):
- #   model.schedule.agents_to_schedule.add(SimpleAgent(i))
-# i == 49
-    
-#for p in range(1,3):
-#    model.schedule.agents_to_schedule.add(SimpleAgent(p+i, initial_state=State.infectious ))
+model = Model(20)
+#model.properties["counter"] = 0
+#model.properties["infected"] = 0
+#model.properties["susceptible"] = 0
+#model.properties["recovered"] = 0
+#model.properties["population"] = model.schedule.agents
 
-
-all_stats = list()
-for r in range(10):
-    model = setup_model(50, 2)
-    population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0}
-    model.schedule.helpers.append(SimpleHelper())
-    model.run()
-    all_stats.append(population_stats)
-    
+def initial_state(person):
+    person.state = State.infectious
 
 
 
+for i in range(1,50):
+    model.schedule.agents_to_schedule.add(SimpleAgent(i))
 
 
-
-#    model = Model(max_num_epochs)...
-#    return model
-
-#model = Model(100)
-
-#for i in range(10):
- #   model.schedule.agents_to_schedule.add(SimpleAgent(i))
-# i == 49
-
-#for someone in random.choices(list(model.schedule.agents),k=2):
- #   someone.state = State.infectious
-
-#for p in range(1,3):
- #   model.schedule.agents_to_schedule.add(SimpleAgent(p+i, initial_state=State.infectious ))
-
-#model.schedule.agents_to_schedule.add(SimpleAgent(i+2, initial_state=State.infectious ))
+model.schedule.agents_to_schedule.add(SimpleAgent(i, initial_state=State.infectious ))
+model.schedule.agents_to_schedule.add(SimpleAgent(i, initial_state=State.infectious ))
 
 
 
@@ -200,20 +176,18 @@ for r in range(10):
 
 
 
+#model.schedule.agents_to_schedule.add(SimpleAgent("Beth", initial_state=State.infectious))
+#model.schedule.agents_to_schedule.add(SimpleAgent("james"))
+#model.schedule.agents_to_schedule.add(SimpleAgent("sarah"))
+#model.schedule.agents_to_schedule.add(SimpleAgent("sam"))
+#model.schedule.agents_to_schedule.add(SimpleAgent("Bella", initial_state=State.infectious))
+#model.schedule.agents_to_schedule.add(SimpleAgent("eli"))
+#model.schedule.agents_to_schedule.add(SimpleAgent("sasha"))
+model.schedule.helpers.append(SimpleHelper())
 
 
-#population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0} 
+model.run()
 
-#model.run()
-
-#all_stats = list()
-#for r in range(10):
-    # population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0} 
-#     model = setup_model(50, 2)
-#     model.run()
-#     all_stats.append(population_stats)
-# Average, min, max # infected over the outbreak
-# Average, min, man length of outbreak
 # Fixed # of epoch; run until no more infectious agents
 # Multiples runs
 
