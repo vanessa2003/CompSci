@@ -175,13 +175,34 @@ for r in range(runs):
     all_stats.append(population_stats)
     
 
-print(all_stats)
+#print(all_stats)
 
-max_infected = max(population_stats.keys(), key=(lambda k: population_stats['recovered_pop']))
+#max_infected = max(population_stats.keys(), key=(lambda k: population_stats['recovered_pop']))
+#print("maximum infected population :",population_stats[max_infected])    
 
-    
-print("maximum infected population :",population_stats[max_infected])    
+def average(lst):
+    return sum(lst)/len(lst)
+
+
+
  
+total_infected = [agent['recovered_pop'] for agent in all_stats]
+#print(total_infected)
+print("maximum number of people infected in a day is",max(total_infected))
+print("minimum number of people infected in a day is",min(total_infected))
+print("average number of people infected in a day is",average(total_infected))
+
+outbreak_length = [days['day'] for days in all_stats]
+#print(outbreak_length)
+
+print("longest outbreak duration is",max(outbreak_length),"days")
+print("shortest outbreak duration is",min(outbreak_length),"days")
+print("average outbreak duration is",average(outbreak_length),"days")
+
+
+
+
+
 
 
 
