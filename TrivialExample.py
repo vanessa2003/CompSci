@@ -113,8 +113,10 @@ class SimpleHelper(Helper):
         population_stats['susceptible_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.susceptible])
         population_stats['infectious_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.infectious])
         population_stats['recovered_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.recovered])
+        population_stats['day'] = model.current_epoch
         if  population_stats['infectious_pop'] == 0:
             model.exit = True
+            population_stats['day'] = model.current_epoch
         print(population_stats)
         
         
@@ -143,12 +145,13 @@ class simplemodel(model):
        
    """
 
-def setup_model(num_agents, num_infectious, max_num_epochs=100):
+def setup_model(num_agents, num_infectious, max_num_epochs=100): 
     model = Model(max_num_epochs)
     for i in range(num_agents):
         model.schedule.agents_to_schedule.add(SimpleAgent(i))
     for p in range(1,num_infectious+1):
         model.schedule.agents_to_schedule.add(SimpleAgent(p+i, initial_state=State.infectious ))
+    
 
     return model
         
@@ -162,13 +165,24 @@ def setup_model(num_agents, num_infectious, max_num_epochs=100):
 
 
 all_stats = list()
-for r in range(10):
-    model = setup_model(50, 2)
-    population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0}
+runs = 30
+for r in range(runs):
+    model = setup_model(50, 2) #users pass in how many susceptible agents they want and how many infectious agents they want
+    population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0, 'day':0}
     model.schedule.helpers.append(SimpleHelper())
     model.run()
+    
     all_stats.append(population_stats)
     
+
+print(all_stats)
+
+max_infected = max(population_stats.keys(), key=(lambda k: population_stats['recovered_pop']))
+
+    
+print("maximum infected population :",population_stats[max_infected])    
+ 
+
 
 
 
