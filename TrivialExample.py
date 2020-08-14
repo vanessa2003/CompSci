@@ -1,8 +1,10 @@
 from panaxea.core.Model import Model
 from panaxea.core.Steppables import Agent, Helper
+from panaxea.core.Environment import ObjectGrid2D
 from enum import IntEnum
 import time
 import numpy as np
+from statistics import mean
 """
 A very simple model which illustrates the basis of creating a model.
 
@@ -42,10 +44,29 @@ class SimpleAgent(Agent):
         self.recovery_duration = 5
         self.incubation_period = 0
         self.ptrans = 0.1
-        
+        self.add_agent_to_grid("virus_env", (0, 0), model)
+        self.end_of_grid = False
 
-    #def step_prologue(self, model):
-        #print("This is the prologue, so I will say my name: {0}".format(self.name))
+    def step_prologue(self, model):
+        current_position = self.environment_positions["virus_env"]
+
+        if self.end_of_grid:
+            return
+
+        xlimit = model.environments["virus_env"].xsize - 1
+        ylimit = model.environments["virus_env"].ysize - 1
+
+        if current_position == (xlimit, ylimit):
+            self.end_of_grid = True
+            return
+
+        if current_position[0] == xlimit:
+            new_position = (0,current_position[1] + random.randint(0,ysize) )
+        else:
+            new_position = (current_position[0] + random.randint(0,xsize),current_position[1])
+
+        self.move_agent("virus_env", new_position, model)
+        
         
 # Transmission model
 # Propability of being infected is proportional to total number of infectous people.
@@ -110,6 +131,7 @@ class SimpleAgent(Agent):
 class SimpleHelper(Helper):
 
     def step_prologue(self, model):
+        
         population_stats['susceptible_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.susceptible])
         population_stats['infectious_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.infectious])
         population_stats['recovered_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.recovered])
@@ -149,8 +171,10 @@ def setup_model(num_agents, num_infectious, max_num_epochs=100):
     model = Model(max_num_epochs)
     for i in range(num_agents):
         model.schedule.agents_to_schedule.add(SimpleAgent(i))
+        SimpleAgent(i).add_agent_to_grid("virus_env", (0, 0), model)
     for p in range(1,num_infectious+1):
         model.schedule.agents_to_schedule.add(SimpleAgent(p+i, initial_state=State.infectious ))
+        SimpleAgent(p).add_agent_to_grid("virus_env", (0, 0), model)
     
 
     return model
@@ -180,8 +204,8 @@ for r in range(runs):
 #max_infected = max(population_stats.keys(), key=(lambda k: population_stats['recovered_pop']))
 #print("maximum infected population :",population_stats[max_infected])    
 
-def average(lst):
-    return sum(lst)/len(lst)
+#def average(lst):
+   # return sum(lst)/len(lst)
 
 
 
@@ -190,19 +214,22 @@ total_infected = [agent['recovered_pop'] for agent in all_stats]
 #print(total_infected)
 print("maximum number of people infected in a day is",max(total_infected))
 print("minimum number of people infected in a day is",min(total_infected))
-print("average number of people infected in a day is",average(total_infected))
+print("average number of people infected in a day is",mean(total_infected))
 
 outbreak_length = [days['day'] for days in all_stats]
 #print(outbreak_length)
 
 print("longest outbreak duration is",max(outbreak_length),"days")
 print("shortest outbreak duration is",min(outbreak_length),"days")
-print("average outbreak duration is",average(outbreak_length),"days")
+print("average outbreak duration is",mean(outbreak_length),"days")
 
 
 
+xsize = ysize = 30
 
 
+model = Model(xsize * ysize + 5) #why is the +5 there?
+ObjectGrid2D("virus_env", xsize, ysize, model)
 
 
 
