@@ -44,27 +44,41 @@ class SimpleAgent(Agent):
         self.recovery_duration = 5
         self.incubation_period = 0
         self.ptrans = 0.1
+        
+        #NOOOOO!
         self.add_agent_to_grid("virus_env", (0, 0), model)
-        self.end_of_grid = False
+        #self.end_of_grid = False
 
     def step_prologue(self, model):
         current_position = self.environment_positions["virus_env"]
 
-        if self.end_of_grid:
-            return
+        #if self.end_of_grid:
+        #    return
 
         xlimit = model.environments["virus_env"].xsize - 1
         ylimit = model.environments["virus_env"].ysize - 1
+        # xstart = 0
+        # ystart = 0
 
-        if current_position == (xlimit, ylimit):
-            self.end_of_grid = True
-            return
+        #if current_position == (xlimit, ylimit):
+            #self.end_of_grid = True
+        #   return
 
-        if current_position[0] == xlimit:
-            new_position = (0,current_position[1] + random.randint(0,ysize) )
-        else:
-            new_position = (current_position[0] + random.randint(0,xsize),current_position[1])
+#        if current_position[0] == xlimit:
+ #           new_position = (0,current_position[1] + random.randint(0,ysize) )
+    #else:
+     #       new_position = (current_position[0] + random.randint(0,xsize),current_position[1])
 
+        # generate a candidate new postition
+        #   1) At most 1 sqaure away
+        #   2) Direction is random
+               # x_direct = choice((-1, 0, 1))
+               # y_direct = choice((-1, 0, 1))
+               # cand_x = x_direct + curr_x
+               # cand_y = y_direct + curr_y
+        
+        # Test if the candidate position is inside the grid
+        # if it's inside, move there
         self.move_agent("virus_env", new_position, model)
         
         
