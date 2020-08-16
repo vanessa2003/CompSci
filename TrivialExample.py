@@ -5,6 +5,7 @@ from enum import IntEnum
 import time
 import numpy as np
 from statistics import mean
+import random
 """
 A very simple model which illustrates the basis of creating a model.
 
@@ -19,7 +20,7 @@ by 1.
 Finally, two SimpleAgents and an instance of the helper are added to the
 schedule and the model is run.
 """
-import random
+
 
 
 
@@ -46,23 +47,38 @@ class SimpleAgent(Agent):
         self.ptrans = 0.1
         
         #NOOOOO!
-        self.add_agent_to_grid("virus_env", (0, 0), model)
+        #self.add_agent_to_grid("virus_env", (0, 0), model)
         #self.end_of_grid = False
 
+    
+   
+
     def step_prologue(self, model):
-        current_position = self.environment_positions["virus_env"]
+        current_position = self.environment_positions["agent_env"]
 
-        #if self.end_of_grid:
-        #    return
+        xlimit = model.environments["agent_env"].xsize - 1
+        ylimit = model.environments["agent_env"].ysize - 1
+        xstart = 0
+        ystart = 0
 
-        xlimit = model.environments["virus_env"].xsize - 1
-        ylimit = model.environments["virus_env"].ysize - 1
-        # xstart = 0
-        # ystart = 0
 
-        #if current_position == (xlimit, ylimit):
-            #self.end_of_grid = True
-        #   return
+        x_direct = random.choice((-1, 0, 1))
+        y_direct = random.choice((-1, 0, 1))
+        cand_x = x_direct + current_position[0]
+        cand_y = y_direct + current_position[1]
+        
+        while self.valid_position == True:
+            if current_position == (xlimit, ylimit):
+                new_position = (cand_x, cand_y)
+            if current_position == (xstart, ystart):
+                new_position = (cand_x, cand_y)
+            if current_position == (xstart, ylimit):
+                new_position = (cand_x, cand_y)
+            if current_position == (xlimit, ystart):
+                new_position = (cand_x, cand_y)
+            
+            
+            
 
 #        if current_position[0] == xlimit:
  #           new_position = (0,current_position[1] + random.randint(0,ysize) )
@@ -79,7 +95,7 @@ class SimpleAgent(Agent):
         
         # Test if the candidate position is inside the grid
         # if it's inside, move there
-        self.move_agent("virus_env", new_position, model)
+        self.move_agent("agent_env", new_position, model)
         
         
 # Transmission model
@@ -181,18 +197,7 @@ class simplemodel(model):
        
    """
 
-def setup_model(num_agents, num_infectious, max_num_epochs=100): 
-    model = Model(max_num_epochs)
-    for i in range(num_agents):
-        model.schedule.agents_to_schedule.add(SimpleAgent(i))
-        SimpleAgent(i).add_agent_to_grid("virus_env", (0, 0), model)
-    for p in range(1,num_infectious+1):
-        model.schedule.agents_to_schedule.add(SimpleAgent(p+i, initial_state=State.infectious ))
-        SimpleAgent(p).add_agent_to_grid("virus_env", (0, 0), model)
-    
 
-    return model
-        
     
 #for i in range(10):
  #   model.schedule.agents_to_schedule.add(SimpleAgent(i))
@@ -200,6 +205,25 @@ def setup_model(num_agents, num_infectious, max_num_epochs=100):
     
 #for p in range(1,3):
 #    model.schedule.agents_to_schedule.add(SimpleAgent(p+i, initial_state=State.infectious ))
+
+
+def setup_model(num_agents, num_infectious, max_num_epochs=100):
+    xsize = ysize = 30
+    model = Model(xsize * ysize + 5) #why is the +5 there?
+    ObjectGrid2D("agent_env", xsize, ysize, model)
+    model = Model(max_num_epochs)
+    for i in range(num_agents):
+        model.schedule.agents_to_schedule.add(SimpleAgent(i))
+        SimpleAgent(i).add_agent_to_grid("agent_env",(random.randint(0,xsize),random.randint(0,ysize)), model)
+    for p in range(1,num_infectious+1):
+        model.schedule.agents_to_schedule.add(SimpleAgent(p+i, initial_state=State.infectious ))
+        SimpleAgent(p+i).add_agent_to_grid("agent_env",(random.randint(0,xsize),random.randint(0,ysize)), model)
+    return model
+
+
+
+
+
 
 
 all_stats = list()
@@ -239,11 +263,7 @@ print("average outbreak duration is",mean(outbreak_length),"days")
 
 
 
-xsize = ysize = 30
 
-
-model = Model(xsize * ysize + 5) #why is the +5 there?
-ObjectGrid2D("virus_env", xsize, ysize, model)
 
 
 
