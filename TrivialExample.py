@@ -45,19 +45,15 @@ class SimpleAgent(Agent):
         self.recovery_duration = 5
         self.incubation_period = 0
         self.ptrans = 0.1
-        
-        #NOOOOO!
-        #self.add_agent_to_grid("virus_env", (0, 0), model)
-        #self.end_of_grid = False
-
+       
     
    
 
     def step_prologue(self, model):
-        current_position = self.environment_positions["agent_env"]
+        current_position = self.environment_positions["virus_env"]
 
-        xlimit = model.environments["agent_env"].xsize - 1
-        ylimit = model.environments["agent_env"].ysize - 1
+        xlimit = model.environments["virus_env"].xsize - 1
+        ylimit = model.environments["virus_env"].ysize - 1
         xstart = 0
         ystart = 0
 
@@ -95,7 +91,7 @@ class SimpleAgent(Agent):
         
         # Test if the candidate position is inside the grid
         # if it's inside, move there
-        self.move_agent("agent_env", new_position, model)
+        self.move_agent("virus_env", new_position, model)
         
         
 # Transmission model
@@ -208,16 +204,16 @@ class simplemodel(model):
 
 
 def setup_model(num_agents, num_infectious, max_num_epochs=100):
+    model = Model(max_num_epochs)
     xsize = ysize = 30
     model = Model(xsize * ysize + 5) #why is the +5 there?
-    ObjectGrid2D("agent_env", xsize, ysize, model)
-    model = Model(max_num_epochs)
+    ObjectGrid2D("virus_env", xsize, ysize, model)
     for i in range(num_agents):
         model.schedule.agents_to_schedule.add(SimpleAgent(i))
-        SimpleAgent(i).add_agent_to_grid("agent_env",(random.randint(0,xsize),random.randint(0,ysize)), model)
+        SimpleAgent(i).add_agent_to_grid("virus_env",(random.randint(0,xsize),random.randint(0,ysize)), model)
     for p in range(1,num_infectious+1):
         model.schedule.agents_to_schedule.add(SimpleAgent(p+i, initial_state=State.infectious ))
-        SimpleAgent(p+i).add_agent_to_grid("agent_env",(random.randint(0,xsize),random.randint(0,ysize)), model)
+        SimpleAgent(p+i).add_agent_to_grid("virus_env",(random.randint(0,xsize),random.randint(0,ysize)), model)
     return model
 
 
@@ -230,6 +226,7 @@ all_stats = list()
 runs = 30
 for r in range(runs):
     model = setup_model(50, 2) #users pass in how many susceptible agents they want and how many infectious agents they want
+    virus_env = model.environments["virus_env"]
     population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0, 'day':0}
     model.schedule.helpers.append(SimpleHelper())
     model.run()
