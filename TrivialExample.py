@@ -63,6 +63,10 @@ class SimpleAgent(Agent):
         cand_x = x_direct + current_position[0]
         cand_y = y_direct + current_position[1]
         
+        # While loop is wrong.
+        # Test whether (cand_x, cand_y) is valid
+        # If it is, then move there, otherwise wait until next epoch (do nothing)
+        
         while self.valid_position == True:
             if current_position == (xlimit, ylimit):
                 new_position = (cand_x, cand_y)
@@ -206,9 +210,10 @@ class simplemodel(model):
 def setup_model(num_agents, num_infectious, max_num_epochs=100):
     model = Model(max_num_epochs)
     xsize = ysize = 30
-    model = Model(xsize * ysize + 5) #why is the +5 there?
+    #model = Model(xsize * ysize + 5) #why is the +5 there?
     ObjectGrid2D("virus_env", xsize, ysize, model)
     for i in range(num_agents):
+        new_agent = SimpleAgent(i)
         model.schedule.agents_to_schedule.add(SimpleAgent(i))
         SimpleAgent(i).add_agent_to_grid("virus_env",(random.randint(0,xsize),random.randint(0,ysize)), model)
     for p in range(1,num_infectious+1):
