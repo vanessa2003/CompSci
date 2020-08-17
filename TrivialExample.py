@@ -66,16 +66,18 @@ class SimpleAgent(Agent):
         # While loop is wrong.
         # Test whether (cand_x, cand_y) is valid
         # If it is, then move there, otherwise wait until next epoch (do nothing)
-        
-        while self.valid_position == True:
-            if current_position == (xlimit, ylimit):
+
+
+
+        if cand_x <= xlimit and cand_x >= xstart:
+            if cand_y <= ylimit and cand_y >= ystart:
                 new_position = (cand_x, cand_y)
-            if current_position == (xstart, ystart):
-                new_position = (cand_x, cand_y)
-            if current_position == (xstart, ylimit):
-                new_position = (cand_x, cand_y)
-            if current_position == (xlimit, ystart):
-                new_position = (cand_x, cand_y)
+                self.move_agent("virus_env", new_position, model)
+                
+                
+       
+          
+                
             
             
             
@@ -95,7 +97,7 @@ class SimpleAgent(Agent):
         
         # Test if the candidate position is inside the grid
         # if it's inside, move there
-        self.move_agent("virus_env", new_position, model)
+        
         
         
 # Transmission model
@@ -210,15 +212,15 @@ class simplemodel(model):
 def setup_model(num_agents, num_infectious, max_num_epochs=100):
     model = Model(max_num_epochs)
     xsize = ysize = 30
-    #model = Model(xsize * ysize + 5) #why is the +5 there?
     ObjectGrid2D("virus_env", xsize, ysize, model)
     for i in range(num_agents):
-        new_agent = SimpleAgent(i)
-        model.schedule.agents_to_schedule.add(SimpleAgent(i))
-        SimpleAgent(i).add_agent_to_grid("virus_env",(random.randint(0,xsize),random.randint(0,ysize)), model)
+        agent = SimpleAgent(i)
+        model.schedule.agents_to_schedule.add(agent)
+        agent.add_agent_to_grid("virus_env",(random.randint(0,xsize),random.randint(0,ysize)), model)
     for p in range(1,num_infectious+1):
-        model.schedule.agents_to_schedule.add(SimpleAgent(p+i, initial_state=State.infectious ))
-        SimpleAgent(p+i).add_agent_to_grid("virus_env",(random.randint(0,xsize),random.randint(0,ysize)), model)
+        ill_agent = SimpleAgent(p+i, initial_state=State.infectious)
+        model.schedule.agents_to_schedule.add(ill_agent)
+        ill_agent.add_agent_to_grid("virus_env",(random.randint(0,xsize),random.randint(0,ysize)), model)
     return model
 
 
@@ -231,7 +233,7 @@ all_stats = list()
 runs = 30
 for r in range(runs):
     model = setup_model(50, 2) #users pass in how many susceptible agents they want and how many infectious agents they want
-    virus_env = model.environments["virus_env"]
+    #virus_env = model.environments["virus_env"]
     population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0, 'day':0}
     model.schedule.helpers.append(SimpleHelper())
     model.run()
