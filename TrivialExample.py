@@ -36,7 +36,7 @@ class State(IntEnum):
 class SimpleAgent(Agent):
     
 
-    def __init__(self, name, initial_state=State.susceptible):
+    def __init__(self, name, position, initial_state=State.susceptible):
         super(SimpleAgent, self).__init__()
         self.name = name
         self.age = random.normalvariate(20,100)
@@ -45,12 +45,15 @@ class SimpleAgent(Agent):
         self.recovery_duration = 5
         self.incubation_period = 0
         self.ptrans = 0.1
+        self.position = position
        
     
    
 
     def step_prologue(self, model):
-        current_position = self.environment_positions["virus_env"]
+        #current_position = self.environment_positions["virus_env"]
+        selfx = self.position[0]
+        selfy = self.position[1]
 
         xlimit = model.environments["virus_env"].xsize - 1
         ylimit = model.environments["virus_env"].ysize - 1
@@ -60,19 +63,39 @@ class SimpleAgent(Agent):
 
         x_direct = random.choice((-1, 0, 1))
         y_direct = random.choice((-1, 0, 1))
-        cand_x = x_direct + current_position[0]
-        cand_y = y_direct + current_position[1]
+       # cand_x = x_direct + temp1
+        #cand_y = y_direct + temp2
         
         # While loop is wrong.
         # Test whether (cand_x, cand_y) is valid
         # If it is, then move there, otherwise wait until next epoch (do nothing)
 
 
+        if selfx <= xstart:
+            selfx += x_direct
 
-        if cand_x <= xlimit and cand_x >= xstart:
-            if cand_y <= ylimit and cand_y >= ystart:
-                new_position = (cand_x, cand_y)
-                self.move_agent("virus_env", new_position, model)
+        if selfx >= xlimit:
+            selfx += x_direct
+
+        if selfy <= ystart:
+            selfy += y_direct
+
+        if selfy >= ylimit:
+            selfy = y_direct
+
+
+
+        self.position = (round(selfx), round(selfy))
+        self.move_agent("virus_env", self.position, model)
+
+
+
+
+
+       # if cand_x <= xlimit and cand_x >= xstart:
+        #    if cand_y <= ylimit and cand_y >= ystart:
+         #       self.position = (cand_x, cand_y)
+          #      self.move_agent("virus_env", self.position, model)
                 
                 
        
@@ -214,13 +237,15 @@ def setup_model(num_agents, num_infectious, max_num_epochs=100):
     xsize = ysize = 30
     ObjectGrid2D("virus_env", xsize, ysize, model)
     for i in range(num_agents):
-        agent = SimpleAgent(i)
-        model.schedule.agents_to_schedule.add(agent)
-        agent.add_agent_to_grid("virus_env",(random.randint(0,xsize),random.randint(0,ysize)), model)
+        agent_position = (random.randint(0,xsize),random.randint(0,ysize))
+        agent = SimpleAgent(i,agent_position)
+        model.schedule.agents.add(agent)
+        agent.add_agent_to_grid("virus_env", agent_position, model)
     for p in range(1,num_infectious+1):
-        ill_agent = SimpleAgent(p+i, initial_state=State.infectious)
-        model.schedule.agents_to_schedule.add(ill_agent)
-        ill_agent.add_agent_to_grid("virus_env",(random.randint(0,xsize),random.randint(0,ysize)), model)
+        agent_position2 = (random.randint(0,xsize),random.randint(0,ysize))
+        ill_agent = SimpleAgent(agent_position2, p+i, initial_state=State.infectious)
+        model.schedule.agents.add(ill_agent)
+        ill_agent.add_agent_to_grid("virus_env",agent_position2, model)
     return model
 
 
