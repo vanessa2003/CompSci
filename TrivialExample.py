@@ -51,12 +51,9 @@ class SimpleAgent(Agent):
    
 
     def step_prologue(self, model):
-        #current_position = self.environment_positions["virus_env"]
-        selfx = self.position[0]
-        selfy = self.position[1]
-
-        xlimit = model.environments["virus_env"].xsize - 1
-        ylimit = model.environments["virus_env"].ysize - 1
+        
+        
+        xlimit,ylimit = env_limit(model.environments["virus_env"])
         xstart = 0
         ystart = 0
 
@@ -69,6 +66,9 @@ class SimpleAgent(Agent):
         # While loop is wrong.
         # Test whether (cand_x, cand_y) is valid
         # If it is, then move there, otherwise wait until next epoch (do nothing)
+
+        selfx = self.position[0]
+        selfy = self.position[1]
 
 
         if selfx <= xstart:
@@ -102,33 +102,6 @@ class SimpleAgent(Agent):
           
                 
             
-            
-            
-
-#        if current_position[0] == xlimit:
- #           new_position = (0,current_position[1] + random.randint(0,ysize) )
-    #else:
-     #       new_position = (current_position[0] + random.randint(0,xsize),current_position[1])
-
-        # generate a candidate new postition
-        #   1) At most 1 sqaure away
-        #   2) Direction is random
-               # x_direct = choice((-1, 0, 1))
-               # y_direct = choice((-1, 0, 1))
-               # cand_x = x_direct + curr_x
-               # cand_y = y_direct + curr_y
-        
-        # Test if the candidate position is inside the grid
-        # if it's inside, move there
-        
-        
-        
-# Transmission model
-# Propability of being infected is proportional to total number of infectous people.
-# "susceptible" perspective
-#    if I am suceptible, evaluate my chance of being infected and then check whether I am infected
-# "infectious" perspective
-#    if I am infectous, evaluate my chance of *infecting* every suceptible
     def step_main(self, model):
         a = model.schedule.agents
         # BP: a = model.schedule.agents
@@ -232,17 +205,28 @@ class simplemodel(model):
 #    model.schedule.agents_to_schedule.add(SimpleAgent(p+i, initial_state=State.infectious ))
 
 
+
+def env_limit(env):
+    xlimit = env.xsize - 1
+    ylimit = env.ysize - 1
+    return (xlimit,ylimit)
+
+
+
+
+
 def setup_model(num_agents, num_infectious, max_num_epochs=100):
     model = Model(max_num_epochs)
     xsize = ysize = 30
     ObjectGrid2D("virus_env", xsize, ysize, model)
     for i in range(num_agents):
-        agent_position = (random.randint(0,xsize),random.randint(0,ysize))
+        xlimit,ylimit = env_limit(model.environments["virus_env"])
+        agent_position = (random.randint(0,xlimit),random.randint(0,ylimit))
         agent = SimpleAgent(i,agent_position)
         model.schedule.agents.add(agent)
         agent.add_agent_to_grid("virus_env", agent_position, model)
     for p in range(1,num_infectious+1):
-        agent_position2 = (random.randint(0,xsize),random.randint(0,ysize))
+        agent_position2 = (random.randint(0,xlimit),random.randint(0,ylimit))
         ill_agent = SimpleAgent(agent_position2, p+i, initial_state=State.infectious)
         model.schedule.agents.add(ill_agent)
         ill_agent.add_agent_to_grid("virus_env",agent_position2, model)
