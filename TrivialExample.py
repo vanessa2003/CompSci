@@ -107,15 +107,23 @@ class SimpleAgent(Agent):
                 
             
     def step_main(self, model):
-        a = model.schedule.agents
-        neighbourhood = model.environments["virus_env"].get_moore_neighbourhood(self.position)
-        potential_targets = random.choices(list(a),k=random.randint(0,5))
-        if self.state is State.infectious:
-            #for neighbour in neighbourhood:
-                for someone in potential_targets:
-                    if someone.state is State.susceptible:
-                        if random.random() <= self.ptrans:
-                            someone.state = State.infected
+
+            
+        
+        #potential_targets = random.choices(list(a),k=random.randint(0,5))
+        if self.state is State.infectious:    
+         #agents = model.schedule.agents
+        #neighbourhood = model.environments["virus_env"].get_moore_neighbourhood(self.position)
+        #neighbourhood.append(self.position)
+        #potential_targets = list()
+        #for a in agents:
+            #pos_of_a = a.position
+         #   if pos_of_a in neighbourhood and a.is_susc:
+         #       potential_tagets.append(a)
+            for someone in potential_targets:
+                if someone.state is State.susceptible:
+                    if random.random() <= self.ptrans:
+                        someone.state = State.infected
             self.infection_duration += 1        
        
         
