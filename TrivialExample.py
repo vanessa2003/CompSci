@@ -51,7 +51,7 @@ class SimpleAgent(Agent):
    
 
     def step_prologue(self, model):
-        
+        print(self.position)
         
         xlimit,ylimit = env_limit(model.environments["virus_env"])
         xstart = 0
@@ -72,16 +72,20 @@ class SimpleAgent(Agent):
 
 
         if selfx <= xstart:
-            selfx += x_direct
+            selfx == xstart
 
         if selfx >= xlimit:
-            selfx += x_direct
+            selfx == xlimit
 
         if selfy <= ystart:
-            selfy += y_direct
+            selfy == ystart
 
         if selfy >= ylimit:
-            selfy = y_direct
+            selfy == ylimit
+
+
+        selfx += x_direct
+        selfy += y_direct
 
 
 
@@ -104,16 +108,22 @@ class SimpleAgent(Agent):
             
     def step_main(self, model):
         a = model.schedule.agents
-        # BP: a = model.schedule.agents
+        neighbourhood = model.environments["virus_env"].get_moore_neighbourhood(self.position)
+        potential_targets = random.choices(list(a),k=random.randint(0,5))
         if self.state is State.infectious:
-            for someone in random.choices(list(a),k=random.randint(0,5)):
-                if someone.state is State.susceptible:
-                    if random.random() <= self.ptrans:
-                        #print(random.random())
-                        someone.state = State.infected
+            #for neighbour in neighbourhood:
+                for someone in potential_targets:
+                    if someone.state is State.susceptible:
+                        if random.random() <= self.ptrans:
+                            someone.state = State.infected
+            self.infection_duration += 1        
+       
+        
+            #for someone in potential_targets:
+               
                         #someone.infection_duration = self.model.schedule.time
             
-            self.infection_duration += 1
+            
             # update length of infection
                         
           
@@ -227,7 +237,7 @@ def setup_model(num_agents, num_infectious, max_num_epochs=100):
         agent.add_agent_to_grid("virus_env", agent_position, model)
     for p in range(1,num_infectious+1):
         agent_position2 = (random.randint(0,xlimit),random.randint(0,ylimit))
-        ill_agent = SimpleAgent(agent_position2, p+i, initial_state=State.infectious)
+        ill_agent = SimpleAgent(p+i,agent_position2,initial_state=State.infectious)
         model.schedule.agents.add(ill_agent)
         ill_agent.add_agent_to_grid("virus_env",agent_position2, model)
     return model
