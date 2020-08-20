@@ -257,7 +257,7 @@ def setup_model(num_agents, num_infectious, max_num_epochs=1000):
 
 
 
-all_stats = list()
+all_runstats = list()
 runs = 10
 for r in range(runs):
     model = setup_model(119, 1) #users pass in how many susceptible agents they want and how many infectious agents they want
@@ -268,11 +268,11 @@ for r in range(runs):
     model.schedule.helpers.append(SimpleHelper())
     model.run()
     
-    all_stats.append(population_stats)
+    all_runstats.append(population_stats)
     
     
 
-print(all_stats)
+print(all_runstats)
 print(all_peak_infectious)
 
 #max_infected = max(population_stats.keys(), key=(lambda k: population_stats['recovered_pop']))
@@ -284,13 +284,13 @@ print(all_peak_infectious)
 
 
  
-total_infected = [agent['recovered_pop'] for agent in all_stats]
+total_infected = [agent['recovered_pop'] for agent in all_runstats]
 #print(total_infected)
-print("maximum number of people infected in a day is",max(total_infected))
-print("minimum number of people infected in a day is",min(total_infected))
-print("average number of people infected in a day is",mean(total_infected))
+print("maximum number of people infected in a outbreak is",max(total_infected))
+print("minimum number of people infected in a outbreak is",min(total_infected))
+print("average number of people infected in a outbreak is",mean(total_infected))
 
-outbreak_length = [days['day'] for days in all_stats]
+outbreak_length = [days['day'] for days in all_runstats]
 #print(outbreak_length)
 
 print("longest outbreak duration is",max(outbreak_length),"days")
@@ -355,4 +355,3 @@ print("largest number of infectious cases in a day",max(peak_infectious))
 # R0 ie how many people I'm likely to infect: for every infectious agents how many agents become newly infected
 
 #State for a *set* runs
-
