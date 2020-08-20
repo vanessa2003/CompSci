@@ -105,9 +105,8 @@ class SimpleAgent(Agent):
                 
        
           
-                
-            
-    def step_main(self, model):
+    def potential_targets(self, spatial_mode):
+        if spatial_mode:
         if self.state is State.infectious:
             agents = model.schedule.agents
             neighbourhood = model.environments["virus_env"].get_moore_neighbourhood(self.position)
@@ -117,8 +116,14 @@ class SimpleAgent(Agent):
                 pos_of_a = a.position
                 if pos_of_a in neighbourhood and a.state is State.susceptible:
                     potential_targets.append(a)
-
-            for someone in potential_targets:
+         else:
+            randomselection
+         
+        return potential_targets
+            
+    def step_main(self, model):
+ 
+            for someone in self.potential_targets(model.properties['spatial_transmission']):
                 if someone.state is State.susceptible:
                     if random.random() <= self.ptrans:
                         someone.state = State.infected
@@ -234,10 +239,12 @@ def env_limit(env):
 
 
 
-def setup_model(num_agents, num_infectious, max_num_epochs=1000):
+def setup_model(num_agents, num_infectious, spatial_mode=True, max_num_epochs=1000):
     model = Model(max_num_epochs)
     xsize = ysize = 30
     ObjectGrid2D("virus_env", xsize, ysize, model)
+    peak_infections = list()
+    model.properties['spatial_transmission'] = spatial_mode
     for i in range(num_agents):
         xlimit,ylimit = env_limit(model.environments["virus_env"])
         agent_position = (random.randint(0,xlimit),random.randint(0,ylimit))
@@ -281,16 +288,14 @@ print(all_peak_infectious)
 #def average(lst):
    # return sum(lst)/len(lst)
 
-
-
  
-total_infected = [agent['recovered_pop'] for agent in all_stats]
+total_infecteds = [run_stat['recovered_pop'] for run_stat in all_stats]
 #print(total_infected)
 print("maximum number of people infected in a day is",max(total_infected))
 print("minimum number of people infected in a day is",min(total_infected))
 print("average number of people infected in a day is",mean(total_infected))
 
-outbreak_length = [days['day'] for days in all_stats]
+outbreak_lengths = [run_stat['day'] for run_stat in all_stats]
 #print(outbreak_length)
 
 print("longest outbreak duration is",max(outbreak_length),"days")
