@@ -355,3 +355,4 @@ print("largest number of infectious cases in a day",max(peak_infectious))
 # R0 ie how many people I'm likely to infect: for every infectious agents how many agents become newly infected
 
 #State for a *set* runs
+
