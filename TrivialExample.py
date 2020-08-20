@@ -22,7 +22,8 @@ schedule and the model is run.
 """
 
 
-
+peak_infectious = []
+all_peak_infectious = []
 
 
 class State(IntEnum):
@@ -51,7 +52,7 @@ class SimpleAgent(Agent):
    
 
     def step_prologue(self, model):
-        print(self.position)
+        #print(self.position)
         
         xlimit,ylimit = env_limit(model.environments["virus_env"])
         xstart = 0
@@ -107,23 +108,21 @@ class SimpleAgent(Agent):
                 
             
     def step_main(self, model):
+        if self.state is State.infectious:
+            agents = model.schedule.agents
+            neighbourhood = model.environments["virus_env"].get_moore_neighbourhood(self.position)
+            neighbourhood.append(self.position)
+            potential_targets = list()
+            for a in agents:
+                pos_of_a = a.position
+                if pos_of_a in neighbourhood and a.state is State.susceptible:
+                    potential_targets.append(a)
 
-            
-        
-        #potential_targets = random.choices(list(a),k=random.randint(0,5))
-        if self.state is State.infectious:    
-         #agents = model.schedule.agents
-        #neighbourhood = model.environments["virus_env"].get_moore_neighbourhood(self.position)
-        #neighbourhood.append(self.position)
-        #potential_targets = list()
-        #for a in agents:
-            #pos_of_a = a.position
-         #   if pos_of_a in neighbourhood and a.is_susc:
-         #       potential_tagets.append(a)
             for someone in potential_targets:
                 if someone.state is State.susceptible:
                     if random.random() <= self.ptrans:
                         someone.state = State.infected
+
             self.infection_duration += 1        
        
         
@@ -177,14 +176,16 @@ class SimpleAgent(Agent):
 class SimpleHelper(Helper):
 
     def step_prologue(self, model):
+       
         
         population_stats['susceptible_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.susceptible])
         population_stats['infectious_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.infectious])
+        peak_infectious.append(population_stats['infectious_pop'])
         population_stats['recovered_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.recovered])
         population_stats['day'] = model.current_epoch
         if  population_stats['infectious_pop'] == 0:
+            all_peak_infectious.append(max(peak_infectious))
             model.exit = True
-            population_stats['day'] = model.current_epoch
         print(population_stats)
         
         
@@ -233,7 +234,7 @@ def env_limit(env):
 
 
 
-def setup_model(num_agents, num_infectious, max_num_epochs=100):
+def setup_model(num_agents, num_infectious, max_num_epochs=1000):
     model = Model(max_num_epochs)
     xsize = ysize = 30
     ObjectGrid2D("virus_env", xsize, ysize, model)
@@ -257,18 +258,22 @@ def setup_model(num_agents, num_infectious, max_num_epochs=100):
 
 
 all_stats = list()
-runs = 30
+runs = 10
 for r in range(runs):
-    model = setup_model(50, 2) #users pass in how many susceptible agents they want and how many infectious agents they want
+    model = setup_model(119, 1) #users pass in how many susceptible agents they want and how many infectious agents they want
     #virus_env = model.environments["virus_env"]
     population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0, 'day':0}
+    
+    
     model.schedule.helpers.append(SimpleHelper())
     model.run()
     
     all_stats.append(population_stats)
     
+    
 
-#print(all_stats)
+print(all_stats)
+print(all_peak_infectious)
 
 #max_infected = max(population_stats.keys(), key=(lambda k: population_stats['recovered_pop']))
 #print("maximum infected population :",population_stats[max_infected])    
@@ -293,7 +298,7 @@ print("shortest outbreak duration is",min(outbreak_length),"days")
 print("average outbreak duration is",mean(outbreak_length),"days")
 
 
-
+print("largest number of infectious cases in a day",max(peak_infectious))
 
 
 
@@ -350,3 +355,4 @@ print("average outbreak duration is",mean(outbreak_length),"days")
 # R0 ie how many people I'm likely to infect: for every infectious agents how many agents become newly infected
 
 #State for a *set* runs
+
