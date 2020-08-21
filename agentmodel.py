@@ -35,7 +35,7 @@ ExposedAgent Epilogue
 peak_infectious = []
 all_peak_infectious = []    #These are the global variables set for use anywhere in the program
 time_taken = []
-infection_limit = 10
+INFECTION_LIMIT = 10
 class State(IntEnum):   #These are the different states an agent can be in and also allows for agents to change from one state to another
     susceptible = 0
     infected = 1
@@ -44,12 +44,12 @@ class State(IntEnum):   #These are the different states an agent can be in and a
 
 
 
-class ExposedAgent(Agent):   #This class holds all the different behaviours of an agent from how they move on a grid to how they infect one another,
+class Person(Agent):   #This class holds all the different behaviours of an agent from how they move on a grid to how they infect one another,
                              #this class also inherits methods from the Agent class in the steppables file
     
 
     def __init__(self, name, position, initial_state=State.susceptible):
-        super(ExposedAgent, self).__init__()
+        super(Person, self).__init__()
         self.name = name
         self.age = random.normalvariate(20,100)
         self.state = initial_state
@@ -127,7 +127,7 @@ class ExposedAgent(Agent):   #This class holds all the different behaviours of a
 
         else:
             if self.state is State.infectious:
-                for someone in random.choices(list(agents),k=random.randint(0,infection_limit)):
+                for someone in random.choices(list(agents),k=random.randint(0,INFECTION_LIMIT)):
                     potential_targets.append(someone)
                 
                 self.infection_duration += 1
@@ -209,7 +209,7 @@ def env_limit(env):
 
 
 
-def setup_model(num_agents, num_infectious, spatial_mode=False, max_num_epochs=1000):
+def setup_model(num_agents, num_infectious, spatial_mode=True, max_num_epochs=1000):
     model = Model(max_num_epochs)
     xsize = ysize = 30                                                                      #The actual environment for the agents are set here, the agents are also placed on the grid at random positions
     ObjectGrid2D("virus_env", xsize, ysize, model)
@@ -217,12 +217,12 @@ def setup_model(num_agents, num_infectious, spatial_mode=False, max_num_epochs=1
     model.properties['spatial_transmission'] = spatial_mode
     for i in range(num_agents):
         agent_position = (random.randint(0,xlimit),random.randint(0,ylimit))
-        agent = ExposedAgent(i,agent_position)
+        agent = Person(i,agent_position)
         model.schedule.agents.add(agent)
         agent.add_agent_to_grid("virus_env", agent_position, model)
     for p in range(1,num_infectious+1):
         agent_position2 = (random.randint(0,xlimit),random.randint(0,ylimit))
-        ill_agent = ExposedAgent(p+i,agent_position2,initial_state=State.infectious)
+        ill_agent = Person(p+i,agent_position2,initial_state=State.infectious)
         model.schedule.agents.add(ill_agent)
         ill_agent.add_agent_to_grid("virus_env",agent_position2, model)
     return model
