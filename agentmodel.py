@@ -32,10 +32,7 @@ ExposedAgent Epilogue
 
 
 
-peak_infectious = []
-all_peak_infectious = []    #These are the global variables set for use anywhere in the program
-time_taken = []
-infection_limit = 10
+
 class State(IntEnum):   #These are the different states an agent can be in and also allows for agents to change from one state to another
     susceptible = 0
     infected = 1
@@ -44,8 +41,10 @@ class State(IntEnum):   #These are the different states an agent can be in and a
 
 
 
-class ExposedAgent(Agent):   #This class holds all the different behaviours of an agent from how they move on a grid to how they infect one another,
-                             #this class also inherits methods from the Agent class in the steppables file
+class ExposedAgent(Agent):   
+    '''This class holds all the different behaviours of an agent from how they move on a 
+       grid to how they infect one another, this class also inherits methods from the Agent 
+       class in the steppables file''''
     
 
     def __init__(self, name, position, initial_state=State.susceptible):
@@ -230,13 +229,17 @@ def setup_model(num_agents, num_infectious, spatial_mode=False, max_num_epochs=1
 
 
 
-
-
-
-all_runstats = list()
 runs = 10
+infection_limit = 10
+
+
+peak_infectious = []
+all_peak_infectious = []    #These are the global variables set for use anywhere in the program
+time_taken = []
+all_runstats = list()
+
 for r in range(runs):                  #The model runs for however many times you want it to you can change the number of runs by changing the value in the variable.
-    model = setup_model(119, 1) #users pass in how many susceptible agents they want and how many infectious agents they want
+    model = setup_model(119, 1, spatial_model=True) #users pass in how many susceptible agents they want and how many infectious agents they want
     population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0, 'day':0}
     peak_infectious.clear()
     
@@ -245,12 +248,39 @@ for r in range(runs):                  #The model runs for however many times yo
     model.run()
     
     all_runstats.append(population_stats)
+
+
+spatial_model_data = {'peak_infectious': peak_infectious,
+ 'all_peak_infectious':all_peak_infectious,...}
+################################################
+peak_infectious = []
+all_peak_infectious = []    #These are the global variables set for use anywhere in the program
+time_taken = []
+all_runstats = list()
+
+for r in range(runs):                  #The model runs for however many times you want it to you can change the number of runs by changing the value in the variable.
+    model = setup_model(119, 1, spatial_mode=False) #users pass in how many susceptible agents they want and how many infectious agents they want
+    population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0, 'day':0}
+    peak_infectious.clear()
     
     
+    model.schedule.helpers.append(Counter())                         
+    model.run()
+    
+    all_runstats.append(population_stats)
+  
+non_spatial_model_data = {'peak_infectious':peak_infectious,
+ 'all_peak_infectious':all_peak_infectious,...}
 
+total_data = {'spatial_model_data':spatial_model_data,
+              'non_spatial_model_data': non_spatial_model_data}
 
+# https://docs.python.org/3/library/json.html
+# Create/open file for writing (results.json)
+# json.dump
+# https://support.microsoft.com/en-us/office/import-data-from-external-data-sources-power-query-be4330b3-5356-486c-a168-b68e9e616f5a
 
-
+    
 for i in range(len(all_peak_infectious)):
     print("in outbreak",i,"it took",time_taken[i],"day(s) to reach a maximum infectious population of",all_peak_infectious[i])
 
@@ -272,8 +302,6 @@ outbreak_lengths = [run_stat['day'] for run_stat in all_runstats]
 print("longest outbreak duration is",max(outbreak_lengths),"days")
 print("shortest outbreak duration is",min(outbreak_lengths),"days")
 print("average outbreak duration is",mean(outbreak_lengths),"days")
-
-
 
 
 
