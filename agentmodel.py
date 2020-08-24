@@ -6,6 +6,7 @@ import time
 import numpy as np
 from statistics import mean
 import random
+import json
 
 """
 This is my Agent based model and here are some notes:
@@ -32,14 +33,13 @@ ExposedAgent Epilogue
 
 
 
-<<<<<<< HEAD
+
 peak_infectious = []
 all_peak_infectious = []    #These are the global variables set for use anywhere in the program
 time_taken = []
 INFECTION_LIMIT = 10
-=======
 
->>>>>>> a6e0397cb99c6f3a2fa50dedc2bd7777e27b5609
+
 class State(IntEnum):   #These are the different states an agent can be in and also allows for agents to change from one state to another
     susceptible = 0
     infected = 1
@@ -47,16 +47,13 @@ class State(IntEnum):   #These are the different states an agent can be in and a
     recovered = 3
 
 
+  
 
-<<<<<<< HEAD
-class Person(Agent):   #This class holds all the different behaviours of an agent from how they move on a grid to how they infect one another,
-                             #this class also inherits methods from the Agent class in the steppables file
-=======
-class ExposedAgent(Agent):   
+class Person(Agent):   
     '''This class holds all the different behaviours of an agent from how they move on a 
        grid to how they infect one another, this class also inherits methods from the Agent 
-       class in the steppables file''''
->>>>>>> a6e0397cb99c6f3a2fa50dedc2bd7777e27b5609
+       class in the steppables file'''
+
     
 
     def __init__(self, name, position, initial_state=State.susceptible):
@@ -222,7 +219,7 @@ def env_limit(env):
 
 def setup_model(num_agents, num_infectious, spatial_mode=True, max_num_epochs=1000):
     model = Model(max_num_epochs)
-    xsize = ysize = 30                                                                      #The actual environment for the agents are set here, the agents are also placed on the grid at random positions
+    xsize = ysize = 10                                                                     #The actual environment for the agents are set here, the agents are also placed on the grid at random positions
     ObjectGrid2D("virus_env", xsize, ysize, model)
     xlimit,ylimit = env_limit(model.environments["virus_env"])                              #spatial_mode can be set to true or false depending on what model you want to run if it set to false it runs the random model and when set to true viceversa.
     model.properties['spatial_transmission'] = spatial_mode
@@ -241,17 +238,17 @@ def setup_model(num_agents, num_infectious, spatial_mode=True, max_num_epochs=10
 
 
 
-runs = 10
-infection_limit = 10
+runs = 100
+#INFECTION_LIMIT = 10
 
 
-peak_infectious = []
-all_peak_infectious = []    #These are the global variables set for use anywhere in the program
+#peak_infectious = []
+all_peak_infectious = []    #Resetting the global variables
 time_taken = []
 all_runstats = list()
 
 for r in range(runs):                  #The model runs for however many times you want it to you can change the number of runs by changing the value in the variable.
-    model = setup_model(119, 1, spatial_model=True) #users pass in how many susceptible agents they want and how many infectious agents they want
+    model = setup_model(119, 1, spatial_mode=True) #users pass in how many susceptible agents they want and how many infectious agents they want
     population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0, 'day':0}
     peak_infectious.clear()
     
@@ -261,11 +258,14 @@ for r in range(runs):                  #The model runs for however many times yo
     
     all_runstats.append(population_stats)
 
+total_infecteds = [run_stat['recovered_pop'] for run_stat in all_runstats]
+outbreak_lengths = [run_stat['day'] for run_stat in all_runstats]
+  
+spatial_model_data = {'all_peak_infectious':all_peak_infectious,'time_taken':time_taken, 'total_infecteds':total_infecteds, 'outbreak_lengths':outbreak_lengths}
 
-spatial_model_data = {'peak_infectious': peak_infectious,
- 'all_peak_infectious':all_peak_infectious,...}
-################################################
-peak_infectious = []
+
+################################################For loop written twice so that the spatial model runs and then non-spatial model runs.
+#peak_infectious = []
 all_peak_infectious = []    #These are the global variables set for use anywhere in the program
 time_taken = []
 all_runstats = list()
@@ -280,17 +280,18 @@ for r in range(runs):                  #The model runs for however many times yo
     model.run()
     
     all_runstats.append(population_stats)
+
+
+total_infecteds = [run_stat['recovered_pop'] for run_stat in all_runstats]
+outbreak_lengths = [run_stat['day'] for run_stat in all_runstats]
   
-non_spatial_model_data = {'peak_infectious':peak_infectious,
- 'all_peak_infectious':all_peak_infectious,...}
+non_spatial_model_data = {'all_peak_infectious':all_peak_infectious,'time_taken':time_taken, 'total_infecteds':total_infecteds, 'outbreak_lengths':outbreak_lengths}
 
 total_data = {'spatial_model_data':spatial_model_data,
               'non_spatial_model_data': non_spatial_model_data}
 
-# https://docs.python.org/3/library/json.html
-# Create/open file for writing (results.json)
-# json.dump
-# https://support.microsoft.com/en-us/office/import-data-from-external-data-sources-power-query-be4330b3-5356-486c-a168-b68e9e616f5a
+
+
 
     
 for i in range(len(all_peak_infectious)):
@@ -316,7 +317,8 @@ print("shortest outbreak duration is",min(outbreak_lengths),"days")
 print("average outbreak duration is",mean(outbreak_lengths),"days")
 
 
-
+with open('statistics.json', 'w') as resultfile:
+    json.dump(total_data, resultfile)
 
 
 
