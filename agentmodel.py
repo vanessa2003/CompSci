@@ -34,12 +34,15 @@ ExposedAgent Epilogue
 
 
 
-peak_infectious = []
+infectious_pop = []
 all_peak_infectious = []    #These are the global variables set for use anywhere in the program
 time_taken = []
 INFECTION_LIMIT = 10
-
-
+susceptible_pop = []
+avg_susceptible = []
+avg_infecteds = []
+recovered_pop = []
+avg_recovered = []
 class State(IntEnum):   #These are the different states an agent can be in and also allows for agents to change from one state to another
     susceptible = 0
     infected = 1
@@ -66,6 +69,7 @@ class Person(Agent):
         self.incubation_period = 0
         self.ptrans = 0.1
         self.position = position
+        self.r_rate = 0
        
     
    
@@ -150,6 +154,8 @@ class Person(Agent):
             if someone.state is State.susceptible:
                 if random.random() <= self.ptrans:
                     someone.state = State.infected
+                    #self.r_rate += 1
+                
 
                     
                                                                                                         #Here the agents in the potential target list have a chance off getting infected the chance of them getting infected can be changed if the value
@@ -178,14 +184,19 @@ class Counter(Helper):
     def step_prologue(self, model):                     
        
         
-        population_stats['susceptible_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.susceptible])    #for every agent in a particular state they are then added to a count
+        population_stats['susceptible_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.susceptible])
+        susceptible_pop.append(population_stats['susceptible_pop'])                                                                                                         #for every agent in a particular state they are then added to a count
         population_stats['infectious_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.infectious])      
-        peak_infectious.append(population_stats['infectious_pop'])
-        population_stats['recovered_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.recovered])        #peak infectious population and the number of days it took to reach peak infectious population is calculated here
+        infectious_pop.append(population_stats['infectious_pop'])
+        population_stats['recovered_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.recovered])                   #peak infectious population and the number of days it took to reach peak infectious population is calculated here
+        recovered_pop.append(population_stats['recovered_pop'])
         population_stats['day'] = model.current_epoch
         if  population_stats['infectious_pop'] == 0:
-            all_peak_infectious.append(max(peak_infectious))
-            time_taken.append(peak_infectious.index(max(peak_infectious))+1)
+            avg_susceptible.append(mean(susceptible_pop))
+            avg_infecteds.append(mean(infectious_pop))
+            avg_recovered.append(mean(recovered_pop))
+            all_peak_infectious.append(max(infectious_pop))
+            time_taken.append(infectious_pop.index(max(infectious_pop))+1)
             model.exit = True
         print(population_stats)
         
@@ -219,7 +230,7 @@ def env_limit(env):
 
 def setup_model(num_agents, num_infectious, spatial_mode=True, max_num_epochs=1000):
     model = Model(max_num_epochs)
-    xsize = ysize = 10                                                                     #The actual environment for the agents are set here, the agents are also placed on the grid at random positions
+    xsize = ysize = 30                                                                     #The actual environment for the agents are set here, the agents are also placed on the grid at random positions
     ObjectGrid2D("virus_env", xsize, ysize, model)
     xlimit,ylimit = env_limit(model.environments["virus_env"])                              #spatial_mode can be set to true or false depending on what model you want to run if it set to false it runs the random model and when set to true viceversa.
     model.properties['spatial_transmission'] = spatial_mode
@@ -242,17 +253,21 @@ runs = 100
 #INFECTION_LIMIT = 10
 
 
-#peak_infectious = []
+infectious_pop = []
 all_peak_infectious = []    #Resetting the global variables
 time_taken = []
 all_runstats = list()
-
+susceptible_pop = []
+avg_susceptible = []
+avg_infecteds = []
+recovered_pop = []
+avg_recovered = []
 for r in range(runs):                  #The model runs for however many times you want it to you can change the number of runs by changing the value in the variable.
     model = setup_model(119, 1, spatial_mode=True) #users pass in how many susceptible agents they want and how many infectious agents they want
     population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0, 'day':0}
-    peak_infectious.clear()
-    
-    
+    infectious_pop.clear()
+    susceptible_pop.clear()
+    recovered_pop.clear()
     model.schedule.helpers.append(Counter())                         
     model.run()
     
@@ -261,21 +276,24 @@ for r in range(runs):                  #The model runs for however many times yo
 total_infecteds = [run_stat['recovered_pop'] for run_stat in all_runstats]
 outbreak_lengths = [run_stat['day'] for run_stat in all_runstats]
   
-spatial_model_data = {'all_peak_infectious':all_peak_infectious,'time_taken':time_taken, 'total_infecteds':total_infecteds, 'outbreak_lengths':outbreak_lengths}
-
+spatial_model_data = {'all_peak_infectious':all_peak_infectious,'time_taken':time_taken, 'total_infecteds':total_infecteds, 'outbreak_lengths':outbreak_lengths,'average_susceptible':avg_susceptible,'average_infected':avg_infecteds, 'average_recovered':avg_recovered }
 
 ################################################For loop written twice so that the spatial model runs and then non-spatial model runs.
-#peak_infectious = []
+infectious_pop = []
 all_peak_infectious = []    #These are the global variables set for use anywhere in the program
 time_taken = []
 all_runstats = list()
-
+susceptible_pop = []
+avg_susceptible = []
+avg_infecteds = []
+recovered_pop = []
+avg_recovered = []
 for r in range(runs):                  #The model runs for however many times you want it to you can change the number of runs by changing the value in the variable.
     model = setup_model(119, 1, spatial_mode=False) #users pass in how many susceptible agents they want and how many infectious agents they want
     population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0, 'day':0}
-    peak_infectious.clear()
-    
-    
+    infectious_pop.clear()
+    susceptible_pop.clear()
+    recovered_pop.clear()
     model.schedule.helpers.append(Counter())                         
     model.run()
     
@@ -285,7 +303,7 @@ for r in range(runs):                  #The model runs for however many times yo
 total_infecteds = [run_stat['recovered_pop'] for run_stat in all_runstats]
 outbreak_lengths = [run_stat['day'] for run_stat in all_runstats]
   
-non_spatial_model_data = {'all_peak_infectious':all_peak_infectious,'time_taken':time_taken, 'total_infecteds':total_infecteds, 'outbreak_lengths':outbreak_lengths}
+non_spatial_model_data = {'all_peak_infectious':all_peak_infectious,'time_taken':time_taken, 'total_infecteds':total_infecteds, 'outbreak_lengths':outbreak_lengths, 'average_susceptible':avg_susceptible,'average_infected':avg_infecteds, 'average_recovered':avg_recovered}
 
 total_data = {'spatial_model_data':spatial_model_data,
               'non_spatial_model_data': non_spatial_model_data}
@@ -315,6 +333,9 @@ outbreak_lengths = [run_stat['day'] for run_stat in all_runstats]
 print("longest outbreak duration is",max(outbreak_lengths),"days")
 print("shortest outbreak duration is",min(outbreak_lengths),"days")
 print("average outbreak duration is",mean(outbreak_lengths),"days")
+
+
+
 
 
 with open('statistics.json', 'w') as resultfile:
