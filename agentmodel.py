@@ -131,12 +131,7 @@ class Person(Agent):
                     pos_of_a = a.position
                     if pos_of_a in neighbourhood and a.state is State.susceptible:
                         potential_targets.append(a)
-
                 self.infection_duration += 1
-                
-        
-
-
         else:
             if self.state is State.infectious:
                 for someone in random.choices(list(agents),k=random.randint(0,INFECTION_LIMIT)):
@@ -154,36 +149,24 @@ class Person(Agent):
             if someone.state is State.susceptible:
                 if random.random() <= self.ptrans:
                     someone.state = State.infected
-                    #self.r_rate += 1
+                    self.r_rate += 1
                 
 
                     
                                                                                                         #Here the agents in the potential target list have a chance off getting infected the chance of them getting infected can be changed if the value
                                                                                                         #in the ptrans attribute of the agent is changed so currently the ptrans value is at 0.1 so agents have a 10% chance of infection.
-        
-            
-                        
-          
-
 
     def step_epilogue(self, model):
-
-        
         if self.state == State.infected:
             self.state = State.infectious                                       #Here is where the agents states are changed and since this is the last step of each epoch it comes to effect at the beginning of the next epoch
            
         if self.state is State.infectious:
             if self.infection_duration == self.recovery_duration:
-                self.state = State.recovered
-               
-            
-      
+                self.state = State.recovered      
                 
 class Counter(Helper):
 
-    def step_prologue(self, model):                     
-       
-        
+    def step_prologue(self, model):                             
         population_stats['susceptible_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.susceptible])
         susceptible_pop.append(population_stats['susceptible_pop'])                                                                                                         #for every agent in a particular state they are then added to a count
         population_stats['infectious_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.infectious])      
@@ -199,38 +182,18 @@ class Counter(Helper):
             time_taken.append(infectious_pop.index(max(infectious_pop))+1)
             model.exit = True
         print(population_stats)
-        
-        
-
-        
-        
-        
-        
-    
-        
 
     def step_epilogue(self,model):
         population_stats['newly_infected'] = len([agent for agent in model.schedule.agents if agent.state == State.infected])
-        
-        
-        
-       
-    
-
-
 
 def env_limit(env):
     xlimit = env.xsize - 1
     ylimit = env.ysize - 1
     return (xlimit,ylimit)          #sets the actual environment limit so an environment with size of 30x30 actually only goes from 0 to 29.
 
-
-
-
-
 def setup_model(num_agents, num_infectious, spatial_mode=True, max_num_epochs=1000):
     model = Model(max_num_epochs)
-    xsize = ysize = 30                                                                     #The actual environment for the agents are set here, the agents are also placed on the grid at random positions
+    xsize = ysize = 10                                                                     #The actual environment for the agents are set here, the agents are also placed on the grid at random positions
     ObjectGrid2D("virus_env", xsize, ysize, model)
     xlimit,ylimit = env_limit(model.environments["virus_env"])                              #spatial_mode can be set to true or false depending on what model you want to run if it set to false it runs the random model and when set to true viceversa.
     model.properties['spatial_transmission'] = spatial_mode
@@ -249,7 +212,7 @@ def setup_model(num_agents, num_infectious, spatial_mode=True, max_num_epochs=10
 
 
 
-runs = 100
+runs = 10
 #INFECTION_LIMIT = 10
 
 
@@ -262,6 +225,7 @@ avg_susceptible = []
 avg_infecteds = []
 recovered_pop = []
 avg_recovered = []
+r_0_1 = list()
 for r in range(runs):                  #The model runs for however many times you want it to you can change the number of runs by changing the value in the variable.
     model = setup_model(119, 1, spatial_mode=True) #users pass in how many susceptible agents they want and how many infectious agents they want
     population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0, 'day':0}
@@ -270,6 +234,7 @@ for r in range(runs):                  #The model runs for however many times yo
     recovered_pop.clear()
     model.schedule.helpers.append(Counter())                         
     model.run()
+    r_0_1.append(mean([a.r_rate for a in model.schedule.agents if a.state == State.recovered]))
     
     all_runstats.append(population_stats)
 
@@ -288,6 +253,7 @@ avg_susceptible = []
 avg_infecteds = []
 recovered_pop = []
 avg_recovered = []
+r_0_2 = list()
 for r in range(runs):                  #The model runs for however many times you want it to you can change the number of runs by changing the value in the variable.
     model = setup_model(119, 1, spatial_mode=False) #users pass in how many susceptible agents they want and how many infectious agents they want
     population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0, 'day':0}
@@ -296,9 +262,8 @@ for r in range(runs):                  #The model runs for however many times yo
     recovered_pop.clear()
     model.schedule.helpers.append(Counter())                         
     model.run()
-    
+    r_0_2.append(mean([a.r_rate for a in model.schedule.agents if a.state == State.recovered]))
     all_runstats.append(population_stats)
-
 
 total_infecteds = [run_stat['recovered_pop'] for run_stat in all_runstats]
 outbreak_lengths = [run_stat['day'] for run_stat in all_runstats]
@@ -308,10 +273,6 @@ non_spatial_model_data = {'all_peak_infectious':all_peak_infectious,'time_taken'
 total_data = {'spatial_model_data':spatial_model_data,
               'non_spatial_model_data': non_spatial_model_data}
 
-
-
-
-    
 for i in range(len(all_peak_infectious)):
     print("in outbreak",i,"it took",time_taken[i],"day(s) to reach a maximum infectious population of",all_peak_infectious[i])
 
@@ -320,28 +281,19 @@ print("On average it takes",mean(time_taken),"day(s) to reach an average maximum
 
 total_infecteds = [run_stat['recovered_pop'] for run_stat in all_runstats]
 
-
 print("maximum number of people infected in an outbreak is",max(total_infecteds))                                            #This is how the statistics are calculated usually done by adding specific values to a list and calculating certain results from these lists
 print("minimum number of people infected in a outbreak is",min(total_infecteds))
 print("average number of people infected in a outbreak is",mean(total_infecteds))                                            #The statistics allows us to analyse the behaviour of either the spatial or random model.
 
-
 outbreak_lengths = [run_stat['day'] for run_stat in all_runstats]
-
-
 
 print("longest outbreak duration is",max(outbreak_lengths),"days")
 print("shortest outbreak duration is",min(outbreak_lengths),"days")
 print("average outbreak duration is",mean(outbreak_lengths),"days")
-
-
-
-
+print("Spatial R0 = ", r_0_1)
+print("Random  R0 = ", r_0_2)
+print("Spatial R0 = ", mean(r_0_1))
+print("Random  R0 = ", mean(r_0_2))
 
 with open('statistics.json', 'w') as resultfile:
     json.dump(total_data, resultfile)
-
-
-
-
-
