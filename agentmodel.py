@@ -163,7 +163,7 @@ class Person(Agent):
             if someone.state is State.susceptible:
                 if random.random() <= self.ptrans:
                     someone.state = State.infected
-                    #self.r_rate += 1
+                    self.r_rate += 1
                 
 
                     
@@ -202,9 +202,10 @@ class Counter(Helper):
         population_stats['day'] = model.current_epoch
         if  population_stats['infectious_pop'] == 0:
             all_sus.append(susceptible_pop)
-            sum_sus = np.array(all_sus).sum(0).tolist()
-            for i in sum_sus:
-                avg_susceptible.append(i/runs)
+            
+            #sum_sus = [ sum(row[i] for row in all_sus) for i in range(len(all_sus[0])) ]
+            #for i in sum_sus:
+            #avg_susceptible.append(sum_sus)
 
             all_infect.append(infectious_pop)
             sum_infect = np.array(all_infect).sum(0).tolist()
@@ -270,13 +271,13 @@ def setup_model(num_agents, num_infectious, spatial_mode=True, max_num_epochs=10
 
 
 
-runs = 100
+runs = 3
 #INFECTION_LIMIT = 10
 
 all_peak_infectious = []    #resetting the global variables
 time_taken = []
 susceptible_pop = []
-all_sus = []
+#all_sus = []
 sum_sus = []
 avg_susceptible = []
 recovered_pop = []
@@ -288,7 +289,7 @@ all_infect = []
 sum_infect = []
 avg_infecteds = []
 all_runstats = []
-
+r_0_1 = list()
 for r in range(runs):                  #The model runs for however many times you want it to you can change the number of runs by changing the value in the variable.
     model = setup_model(119, 1, spatial_mode=True) #users pass in how many susceptible agents they want and how many infectious agents they want
     population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0, 'day':0}
@@ -297,7 +298,7 @@ for r in range(runs):                  #The model runs for however many times yo
     recovered_pop.clear()
     model.schedule.helpers.append(Counter())                         
     model.run()
-    
+    r_0_1.append(mean([a.r_rate for a in model.schedule.agents if a.state == State.recovered]))
     all_runstats.append(population_stats)
 
 total_infecteds = [run_stat['recovered_pop'] for run_stat in all_runstats]
@@ -321,14 +322,16 @@ all_infect = []
 sum_infect = []
 avg_infecteds = []
 all_runstats = []
+r_0_2 = list()
 for r in range(runs):                  #The model runs for however many times you want it to you can change the number of runs by changing the value in the variable.
     model = setup_model(119, 1, spatial_mode=False) #users pass in how many susceptible agents they want and how many infectious agents they want
     population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0, 'day':0}
     infectious_pop.clear()
-    susceptible_pop.clear()
+    #susceptible_pop.clear()
     recovered_pop.clear()
     model.schedule.helpers.append(Counter())                         
     model.run()
+    r_0_2.append(mean([a.r_rate for a in model.schedule.agents if a.state == State.recovered]))
     
     all_runstats.append(population_stats)
 
@@ -367,9 +370,15 @@ print("longest outbreak duration is",max(outbreak_lengths),"days")
 print("shortest outbreak duration is",min(outbreak_lengths),"days")
 print("average outbreak duration is",mean(outbreak_lengths),"days")
 
+print("Spatial R0 = ", r_0_1)
+print("Random  R0 = ", r_0_2)
+print("Spatial R0 = ", mean(r_0_1))
+print("Random  R0 = ", mean(r_0_2))
 
 
-
+print(all_sus)
+#print(all_peak_infectious)
+#print(avg_susceptible)
 
 with open('statistics.json', 'w') as resultfile:
     json.dump(total_data, resultfile)
