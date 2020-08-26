@@ -208,12 +208,12 @@ class Counter(Helper):
             #avg_susceptible.append(sum_sus)
 
             all_infect.append(infectious_pop)
-            sum_infect = np.array(all_infect).sum(0).tolist()
+            sum_infect = np.array(all_infect).sum(0)#.tolist()
             for i in sum_infect:
                 avg_infecteds.append(i/runs)
 
             all_rec.append(recovered_pop)
-            sum_rec = np.array(all_rec).sum(0).tolist()
+            sum_rec = np.array(all_rec).sum(0)#.tolist()
             for i in sum_rec:
                 avg_recovered.append(i/runs)
 
@@ -293,9 +293,9 @@ r_0_1 = list()
 for r in range(runs):                  #The model runs for however many times you want it to you can change the number of runs by changing the value in the variable.
     model = setup_model(119, 1, spatial_mode=True) #users pass in how many susceptible agents they want and how many infectious agents they want
     population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0, 'day':0}
-    infectious_pop.clear()
-    susceptible_pop.clear()
-    recovered_pop.clear()
+    infectious_pop = list()
+    susceptible_pop = list()
+    recovered_pop = list()
     model.schedule.helpers.append(Counter())                         
     model.run()
     r_0_1.append(mean([a.r_rate for a in model.schedule.agents if a.state == State.recovered]))
@@ -303,7 +303,7 @@ for r in range(runs):                  #The model runs for however many times yo
 
 total_infecteds = [run_stat['recovered_pop'] for run_stat in all_runstats]
 outbreak_lengths = [run_stat['day'] for run_stat in all_runstats]
-  
+print(all_sus)
 spatial_model_data = {'all_peak_infectious':all_peak_infectious,'time_taken':time_taken, 'total_infecteds':total_infecteds, 'outbreak_lengths':outbreak_lengths,'average_susceptible':avg_susceptible,'average_infected':avg_infecteds, 'average_recovered':avg_recovered }
 
 ################################################For loop written twice so that the spatial model runs and then non-spatial model runs.
@@ -326,9 +326,9 @@ r_0_2 = list()
 for r in range(runs):                  #The model runs for however many times you want it to you can change the number of runs by changing the value in the variable.
     model = setup_model(119, 1, spatial_mode=False) #users pass in how many susceptible agents they want and how many infectious agents they want
     population_stats = {'infectious_pop':0, 'newly_infected':0, 'susceptible_pop':0, 'recovered_pop':0, 'day':0}
-    infectious_pop.clear()
-    #susceptible_pop.clear()
-    recovered_pop.clear()
+    infectious_pop = list()
+    susceptible_pop = list()
+    recovered_pop = list()
     model.schedule.helpers.append(Counter())                         
     model.run()
     r_0_2.append(mean([a.r_rate for a in model.schedule.agents if a.state == State.recovered]))
