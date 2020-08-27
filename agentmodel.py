@@ -194,7 +194,7 @@ class Counter(Helper):
        
         
         population_stats['susceptible_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.susceptible])
-        susceptible_pop.append(population_stats['susceptible_pop'])                                                      #for every agent in a particular state they are then added to a count
+        susceptible_pop.append(population_stats['susceptible_pop'])                                                                             #for every agent in a particular state they are then added to a count
         population_stats['infectious_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.infectious])      
         infectious_pop.append(population_stats['infectious_pop'])
         population_stats['recovered_pop'] = len([agent for agent in model.schedule.agents if agent.state == State.recovered])                   #peak infectious population and the number of days it took to reach peak infectious population is calculated here
@@ -202,18 +202,24 @@ class Counter(Helper):
         population_stats['day'] = model.current_epoch
         if  population_stats['infectious_pop'] == 0:
             all_sus.append(susceptible_pop)
+            sum_sus = [sum(i) for i in zip(*all_sus)]
+            #for j in range(0, len(all_sus[0])):
+             #   tmp = 0
+              #  for i in range(0, len(all_sus)):
+               #     tmp = tmp + all_sus[i][j]
+                #    sum_sus.append(tmp) 
             
-            #sum_sus = [ sum(row[i] for row in all_sus) for i in range(len(all_sus[0])) ]
+            
             #for i in sum_sus:
-            #avg_susceptible.append(sum_sus)
+            avg_susceptible.append(sum_sus)
 
             all_infect.append(infectious_pop)
-            sum_infect = np.array(all_infect).sum(0)#.tolist()
+            #sum_infect = np.array(all_infect).sum(0).tolist()
             for i in sum_infect:
                 avg_infecteds.append(i/runs)
 
             all_rec.append(recovered_pop)
-            sum_rec = np.array(all_rec).sum(0)#.tolist()
+            #sum_rec = np.array(all_rec).sum(0)#.tolist()
             for i in sum_rec:
                 avg_recovered.append(i/runs)
 
@@ -277,7 +283,7 @@ runs = 3
 all_peak_infectious = []    #resetting the global variables
 time_taken = []
 susceptible_pop = []
-#all_sus = []
+all_sus = []
 sum_sus = []
 avg_susceptible = []
 recovered_pop = []
@@ -377,6 +383,8 @@ print("Random  R0 = ", mean(r_0_2))
 
 
 print(all_sus)
+#print(all_infect)
+print(sum_sus)
 #print(all_peak_infectious)
 #print(avg_susceptible)
 
