@@ -275,6 +275,12 @@ def setup_model(num_agents, num_infectious, spatial_mode=True, max_num_epochs=10
     return model
 
 
+def average_uneven_lists(lstoflsts):
+    import itertools
+    the_means = list()
+    for i in itertools.zip_longest(*lstoflsts, fillvalue=-1):
+        the_means.append(mean([v for v in i if v > -1]))
+    return the_means
 
 
 runs = 3
@@ -309,7 +315,7 @@ for r in range(runs):                  #The model runs for however many times yo
 
 total_infecteds = [run_stat['recovered_pop'] for run_stat in all_runstats]
 outbreak_lengths = [run_stat['day'] for run_stat in all_runstats]
-print(all_sus)
+print(average_uneven_lists(all_sus))
 spatial_model_data = {'all_peak_infectious':all_peak_infectious,'time_taken':time_taken, 'total_infecteds':total_infecteds, 'outbreak_lengths':outbreak_lengths,'average_susceptible':avg_susceptible,'average_infected':avg_infecteds, 'average_recovered':avg_recovered }
 
 ################################################For loop written twice so that the spatial model runs and then non-spatial model runs.
