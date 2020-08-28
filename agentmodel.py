@@ -37,7 +37,7 @@ ExposedAgent Epilogue
 
 all_peak_infectious = []    #These are the global variables set for use anywhere in the program
 time_taken = []
-INFECTION_LIMIT = 10
+INFECTION_LIMIT = 5
 susceptible_pop = []
 all_sus = []
 sum_sus = []
@@ -202,26 +202,10 @@ class Counter(Helper):
         population_stats['day'] = model.current_epoch
         if  population_stats['infectious_pop'] == 0:
             all_sus.append(susceptible_pop)
-            sum_sus = [sum(i) for i in zip(*all_sus)]
-            #for j in range(0, len(all_sus[0])):
-             #   tmp = 0
-              #  for i in range(0, len(all_sus)):
-               #     tmp = tmp + all_sus[i][j]
-                #    sum_sus.append(tmp) 
-            
-            
-            #for i in sum_sus:
-            avg_susceptible.append(sum_sus)
-
+           
             all_infect.append(infectious_pop)
-            #sum_infect = np.array(all_infect).sum(0).tolist()
-            for i in sum_infect:
-                avg_infecteds.append(i/runs)
-
+           
             all_rec.append(recovered_pop)
-            #sum_rec = np.array(all_rec).sum(0)#.tolist()
-            for i in sum_rec:
-                avg_recovered.append(i/runs)
 
             all_peak_infectious.append(max(infectious_pop))
             time_taken.append(infectious_pop.index(max(infectious_pop))+1)
@@ -258,7 +242,7 @@ def env_limit(env):
 
 def setup_model(num_agents, num_infectious, spatial_mode=True, max_num_epochs=1000):
     model = Model(max_num_epochs)
-    xsize = ysize = 30                                                                     #The actual environment for the agents are set here, the agents are also placed on the grid at random positions
+    xsize = ysize = 15                                                                     #The actual environment for the agents are set here, the agents are also placed on the grid at random positions
     ObjectGrid2D("virus_env", xsize, ysize, model)
     xlimit,ylimit = env_limit(model.environments["virus_env"])                              #spatial_mode can be set to true or false depending on what model you want to run if it set to false it runs the random model and when set to true viceversa.
     model.properties['spatial_transmission'] = spatial_mode
@@ -283,7 +267,7 @@ def average_uneven_lists(lstoflsts):
     return the_means
 
 
-runs = 3
+runs = 300
 #INFECTION_LIMIT = 10
 
 all_peak_infectious = []    #resetting the global variables
@@ -311,12 +295,12 @@ for r in range(runs):                  #The model runs for however many times yo
     model.schedule.helpers.append(Counter())                         
     model.run()
     r_0_1.append(mean([a.r_rate for a in model.schedule.agents if a.state == State.recovered]))
+    real_rate = [num for num in r_0_1 if num > 0]
     all_runstats.append(population_stats)
 
 total_infecteds = [run_stat['recovered_pop'] for run_stat in all_runstats]
 outbreak_lengths = [run_stat['day'] for run_stat in all_runstats]
-print(average_uneven_lists(all_sus))
-spatial_model_data = {'all_peak_infectious':all_peak_infectious,'time_taken':time_taken, 'total_infecteds':total_infecteds, 'outbreak_lengths':outbreak_lengths,'average_susceptible':avg_susceptible,'average_infected':avg_infecteds, 'average_recovered':avg_recovered }
+spatial_model_data = {'all_peak_infectious':all_peak_infectious,'time_taken':time_taken, 'total_infecteds':total_infecteds, 'outbreak_lengths':outbreak_lengths,'average_susceptible':average_uneven_lists(all_sus),'average_infected':average_uneven_lists(all_infect), 'average_recovered':average_uneven_lists(all_rec)}
 
 ################################################For loop written twice so that the spatial model runs and then non-spatial model runs.
 all_peak_infectious = []    
@@ -344,14 +328,14 @@ for r in range(runs):                  #The model runs for however many times yo
     model.schedule.helpers.append(Counter())                         
     model.run()
     r_0_2.append(mean([a.r_rate for a in model.schedule.agents if a.state == State.recovered]))
-    
+    real_rate2 = [num for num in r_0_2 if num > 0]
     all_runstats.append(population_stats)
 
 
 total_infecteds = [run_stat['recovered_pop'] for run_stat in all_runstats]
 outbreak_lengths = [run_stat['day'] for run_stat in all_runstats]
-  
-non_spatial_model_data = {'all_peak_infectious':all_peak_infectious,'time_taken':time_taken, 'total_infecteds':total_infecteds, 'outbreak_lengths':outbreak_lengths, 'average_susceptible':avg_susceptible,'average_infected':avg_infecteds, 'average_recovered':avg_recovered}
+ 
+non_spatial_model_data = {'all_peak_infectious':all_peak_infectious,'time_taken':time_taken, 'total_infecteds':total_infecteds, 'outbreak_lengths':outbreak_lengths, 'average_susceptible':average_uneven_lists(all_sus),'average_infected':(average_uneven_lists(all_infect)), 'average_recovered':average_uneven_lists(all_rec)}
 
 total_data = {'spatial_model_data':spatial_model_data,
               'non_spatial_model_data': non_spatial_model_data}
@@ -366,7 +350,7 @@ for i in range(len(all_peak_infectious)):
 print("largest number of infectious cases in a day",max(all_peak_infectious))
 print("On average it takes",mean(time_taken),"day(s) to reach an average maximum infectious population of",mean(all_peak_infectious))
 
-total_infecteds = [run_stat['recovered_pop'] for run_stat in all_runstats]
+
 
 
 print("maximum number of people infected in an outbreak is",max(total_infecteds))                                            #This is how the statistics are calculated usually done by adding specific values to a list and calculating certain results from these lists
@@ -374,25 +358,17 @@ print("minimum number of people infected in a outbreak is",min(total_infecteds))
 print("average number of people infected in a outbreak is",mean(total_infecteds))                                            #The statistics allows us to analyse the behaviour of either the spatial or random model.
 
 
-outbreak_lengths = [run_stat['day'] for run_stat in all_runstats]
-
-
 
 print("longest outbreak duration is",max(outbreak_lengths),"days")
 print("shortest outbreak duration is",min(outbreak_lengths),"days")
 print("average outbreak duration is",mean(outbreak_lengths),"days")
 
-print("Spatial R0 = ", r_0_1)
-print("Random  R0 = ", r_0_2)
-print("Spatial R0 = ", mean(r_0_1))
-print("Random  R0 = ", mean(r_0_2))
+#print("Spatial R0 = ", r_0_1)
+#print("Random  R0 = ", r_0_2)
+print("Spatial R0 = ", mean(real_rate))
+print("Random  R0 = ", mean(real_rate2))
 
 
-print(all_sus)
-#print(all_infect)
-print(sum_sus)
-#print(all_peak_infectious)
-#print(avg_susceptible)
 
 with open('statistics.json', 'w') as resultfile:
     json.dump(total_data, resultfile)
