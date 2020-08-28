@@ -268,7 +268,7 @@ def average_uneven_lists(lstoflsts):
 
 
 runs = 300
-#INFECTION_LIMIT = 10
+
 
 all_peak_infectious = []    #resetting the global variables
 time_taken = []
@@ -363,8 +363,7 @@ print("longest outbreak duration is",max(outbreak_lengths),"days")
 print("shortest outbreak duration is",min(outbreak_lengths),"days")
 print("average outbreak duration is",mean(outbreak_lengths),"days")
 
-#print("Spatial R0 = ", r_0_1)
-#print("Random  R0 = ", r_0_2)
+
 print("Spatial R0 = ", mean(real_rate))
 print("Random  R0 = ", mean(real_rate2))
 
