@@ -79,6 +79,7 @@ class Person(Agent):
         self.ptrans = 0.1
         self.position = position
         self.r_rate = 0
+        self.r_tracker = False
        
     
    
@@ -122,6 +123,13 @@ class Person(Agent):
         self.move_agent("virus_env", self.position, model)
 
 
+
+
+
+      
+                
+       
+          
     def potential_targets(self, spatial_mode):
         potential_targets = list()
         agents = model.schedule.agents                                                      #The potential_targets function determines how agents can infect one another whether thats in a spatial model or in random model 
@@ -136,6 +144,9 @@ class Person(Agent):
 
                 self.infection_duration += 1
                 
+        
+
+
         else:
             if self.state is State.infectious:
                 for someone in random.choices(list(agents),k=random.randint(0,INFECTION_LIMIT)):
@@ -153,7 +164,8 @@ class Person(Agent):
             if someone.state is State.susceptible:
                 if random.random() <= self.ptrans:
                     someone.state = State.infected
-                    self.r_rate += 1
+                    if self.r_tracker:
+                        self.r_rate += 1
                 
 
                     
@@ -205,6 +217,12 @@ class Counter(Helper):
         
 
         
+        
+        
+        
+    
+        
+
     def step_epilogue(self,model):
         population_stats['newly_infected'] = len([agent for agent in model.schedule.agents if agent.state == State.infected])
         
@@ -238,6 +256,7 @@ def setup_model(num_agents, num_infectious, spatial_mode=True, max_num_epochs=10
     for p in range(1,num_infectious+1):
         agent_position2 = (random.randint(0,xlimit),random.randint(0,ylimit))
         ill_agent = Person(p+i,agent_position2,initial_state=State.infectious)
+        ill_agent.r_tracker = True
         model.schedule.agents.add(ill_agent)
         ill_agent.add_agent_to_grid("virus_env",agent_position2, model)
     return model
@@ -251,7 +270,7 @@ def average_uneven_lists(lstoflsts):
     return the_means
 
 
-runs = 800
+runs = 300
 
 
 all_peak_infectious = []    #resetting the global variables
@@ -278,7 +297,7 @@ for r in range(runs):                  #The model runs for however many times yo
     recovered_pop = list()
     model.schedule.helpers.append(Counter())                         
     model.run()
-    r_0_1.append(mean([a.r_rate for a in model.schedule.agents if a.state == State.recovered]))
+    r_0_1.append(mean([a.r_rate for a in model.schedule.agents if a.r_tracker]))
     real_rate = [num for num in r_0_1 if num > 0]
     all_runstats.append(population_stats)
 
@@ -311,7 +330,7 @@ for r in range(runs):                  #The model runs for however many times yo
     recovered_pop = list()
     model.schedule.helpers.append(Counter())                         
     model.run()
-    r_0_2.append(mean([a.r_rate for a in model.schedule.agents if a.state == State.recovered]))
+    r_0_2.append(mean([a.r_rate for a in model.schedule.agents if a.r_tracker]))
     real_rate2 = [num for num in r_0_2 if num > 0]
     all_runstats.append(population_stats)
 
