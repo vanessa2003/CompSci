@@ -122,13 +122,6 @@ class Person(Agent):
         self.move_agent("virus_env", self.position, model)
 
 
-
-
-
-      
-                
-       
-          
     def potential_targets(self, spatial_mode):
         potential_targets = list()
         agents = model.schedule.agents                                                      #The potential_targets function determines how agents can infect one another whether thats in a spatial model or in random model 
@@ -143,9 +136,6 @@ class Person(Agent):
 
                 self.infection_duration += 1
                 
-        
-
-
         else:
             if self.state is State.infectious:
                 for someone in random.choices(list(agents),k=random.randint(0,INFECTION_LIMIT)):
@@ -215,12 +205,6 @@ class Counter(Helper):
         
 
         
-        
-        
-        
-    
-        
-
     def step_epilogue(self,model):
         population_stats['newly_infected'] = len([agent for agent in model.schedule.agents if agent.state == State.infected])
         
@@ -267,7 +251,7 @@ def average_uneven_lists(lstoflsts):
     return the_means
 
 
-runs = 300
+runs = 800
 
 
 all_peak_infectious = []    #resetting the global variables
