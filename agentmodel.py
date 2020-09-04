@@ -37,7 +37,7 @@ ExposedAgent Epilogue
 
 all_peak_infectious = []    #These are the global variables set for use anywhere in the program
 time_taken = []
-INFECTION_LIMIT = 5
+INFECTION_LIMIT = 7
 susceptible_pop = []
 all_sus = []
 sum_sus = []
